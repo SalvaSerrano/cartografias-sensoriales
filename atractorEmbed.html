@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Atractor</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    /* Aquí puedes añadir más CSS si quieres personalizar la web */
+  </style>
+</head>
+
+<body>
+  <script>
+    let target;
+    let sliderSize, sliderAlpha, sliderCount, sliderWeight;
+    let sliderRectW, sliderRectH, sliderRadius;
+    let colorPicker, btnSave, selectMode, checkCircle;
+    const sidebarWidth = 260;
+
+    function setup() {
+      let canvas = createCanvas(windowWidth - sidebarWidth, windowHeight);
+      canvas.position(sidebarWidth, 0);
+      target = createVector(width / 2, height / 2);
+
+      // --- ESTILOS CSS ---
+      createElement('style', `
+        body { margin: 0; overflow: hidden; background: #fff; }
+        .sidebar { 
+          width: ${sidebarWidth}px; height: 100vh; background: #f4f4f9; 
+          position: fixed; left: 0; top: 0; padding: 20px; 
+          box-sizing: border-box; border-right: 1px solid #ddd;
+          overflow-y: auto; z-index: 100; font-family: Arial, sans-serif;
+        }
+        .control-group { margin-bottom: 20px; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px; }
+        .label-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .label-title { font-size: 11px; font-weight: bold; color: #333; text-transform: uppercase; }
+        .current-val-input { width: 50px; font-size: 12px; color: #df93f0; font-weight: bold; text-align: center; border-radius: 4px; border: 1px solid #ddd; padding: 2px; }
+        .slider-container { display: flex; align-items: center; gap: 8px; }
+        .limit-val { font-size: 10px; color: #888; width: 30px; text-align: center; }
+        input[type=range] { flex-grow: 1; -webkit-appearance: none; background: #ddd; height: 4px; border-radius: 2px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: #df93f0; cursor: pointer; border: 2px solid #fff; }
+        button { width: 100%; background: #df93f0; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        button:hover { background: #c07cd1; }
+        select { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc; margin-top: 5px; }
+      `);
+
+      let sidebar = createDiv().class('sidebar');
+
+      sliderCount = createEditableSlider(sidebar, "Cantidad", 100, 5000, 1000);
+      sliderSize = createEditableSlider(sidebar, "Largo", 5, 100, 20);
+      sliderWeight = createEditableSlider(sidebar, "Espesor", 1, 15, 2);
+
+      let distGroup = createDiv().parent(sidebar).class('control-group');
+      createDiv("Distribución").parent(distGroup).class('label-title');
+      selectMode = createSelect().parent(distGroup);
+      selectMode.option('Rejilla');
+      selectMode.option('Aleatorio');
+
+      sliderRectW = createEditableSlider(sidebar, "Ancho Área", 50, 500, 300);
+      sliderRectH = createEditableSlider(sidebar, "Alto Área", 50, 500, 300);
+      sliderRadius = createEditableSlider(sidebar, "Radio Círculo", 20, 500, 150);
+
+      let checkDiv = createDiv().parent(sidebar).class('control-group');
+      checkCircle = createCheckbox(' Limitar por Círculo', false).parent(checkDiv).style('font-size', '12px');
+
+      sliderAlpha = createEditableSlider(sidebar, "Opacidad", 0, 255, 180);
+
+      let colorGroup = createDiv().parent(sidebar).class('control-group');
+      createDiv("Color").parent(colorGroup).class('label-title');
+      colorPicker = createColorPicker('#df93f0').parent(colorGroup).style('width', '100%').style('height', '30px');
+
+      btnSave = createButton('DESCARGAR PNG').parent(sidebar);
+      btnSave.mousePressed(downloadCroppedImage);
+    }
+
+    function draw() {
+      clear();
+      // Dibujamos la composición en el lienzo principal (this)
+      renderComposition(this, false);
+    }
+
+    function renderComposition(pg, isExport) {
+      let col = colorPicker.color();
+      col.setAlpha(sliderAlpha.value());
+      pg.stroke(col);
+      pg.strokeWeight(sliderWeight.value());
+
+      let rw = sliderRectW.value();
+      let rh = sliderRectH.value();
+      let margin = 10;
+
+      // Ajuste de coordenadas si es para exportar (esquina 0,0) o para pantalla (centrado)
+      let rx = isExport ? margin : (width - rw) / 2;
+      let ry = isExport ? margin : (height - rh) / 2;
+
+      // El punto objetivo (target) se ajusta relativamente en la exportación
+      let tempTargetX = isExport ? target.x - ((width - rw) / 2) + margin : target.x;
+      let tempTargetY = isExport ? target.y - ((height - rh) / 2) + margin : target.y;
+
+      if (selectMode.value() === 'Rejilla') {
+        let count = sliderCount.value();
+        let areaRatio = rw / rh;
+        let cols = floor(sqrt(count * areaRatio));
+        let rows = ceil(count / cols);
+        let spX = rw / cols;
+        let spY = rh / rows;
+
+        for (let i = 0; i < cols; i++) {
+          for (let j = 0; j < rows; j++) {
+            let px = rx + i * spX + spX / 2;
+            let py = ry + j * spY + spY / 2;
+            drawOrientedLine(pg, px, py, tempTargetX, tempTargetY, isExport);
+          }
+        }
+      } else {
+        randomSeed(42);
+        for (let i = 0; i < sliderCount.value(); i++) {
+          let px = random(rx, rx + rw);
+          let py = random(ry, ry + rh);
+          drawOrientedLine(pg, px, py, tempTargetX, tempTargetY, isExport);
+        }
+      }
+    }
+
+    function drawOrientedLine(pg, x, y, tX, tY, isExport) {
+      // Verificación de máscara circular
+      if (checkCircle.checked()) {
+        let centerX = isExport ? (sliderRectW.value() / 2) + 10 : width / 2;
+        let centerY = isExport ? (sliderRectH.value() / 2) + 10 : height / 2;
+        if (dist(x, y, centerX, centerY) > sliderRadius.value()) return;
+      }
+
+      let angle = atan2(tY - y, tX - x);
+      pg.push();
+      pg.translate(x, y);
+      pg.rotate(angle);
+      pg.line(-sliderSize.value() / 2, 0, sliderSize.value() / 2, 0);
+      pg.pop();
+    }
+
+    function downloadCroppedImage() {
+      let margin = 20;
+      let outW = sliderRectW.value() + margin;
+      let outH = sliderRectH.value() + margin;
+
+      let pg = createGraphics(outW, outH);
+      pg.clear();
+      renderComposition(pg, true);
+      save(pg, 'atractor', 'png');
+    }
+
+    function createEditableSlider(parent, labelText, minV, maxV, defaultV) {
+      let group = createDiv().parent(parent).class('control-group');
+      let header = createDiv().parent(group).class('label-header');
+      createSpan(labelText).parent(header).class('label-title');
+      let valInput = createInput(defaultV.toString()).parent(header).class('current-val-input');
+      let sliderRow = createDiv().parent(group).class('slider-container');
+      createSpan(minV).parent(sliderRow).class('limit-val');
+      let s = createSlider(minV, maxV, defaultV).parent(sliderRow);
+      createSpan(maxV).parent(sliderRow).class('limit-val');
+      s.input(() => valInput.value(s.value()));
+      valInput.changed(() => {
+        let v = constrain(parseInt(valInput.value()) || minV, minV, maxV);
+        valInput.value(v);
+        s.value(v);
+      });
+      return s;
+    }
+
+    function mousePressed() {
+      if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+        target.set(mouseX, mouseY);
+      }
+    }
+
+    function windowResized() {
+      resizeCanvas(windowWidth - sidebarWidth, windowHeight);
+    }
+  </script>
+</body>
+
+</html>

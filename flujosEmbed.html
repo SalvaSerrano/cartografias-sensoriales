@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Nube</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    /* Aquí puedes añadir más CSS si quieres personalizar la web */
+  </style>
+</head>
+
+<body>
+  <script>
+    let lines = [];
+    let sliderSize, sliderAlpha, sliderCount, sliderWeight, sliderThickness;
+    let colorPicker, btnSave, btnClear;
+    const sidebarWidth = 260;
+
+    function setup() {
+      let canvas = createCanvas(windowWidth - sidebarWidth, windowHeight);
+      canvas.position(sidebarWidth, 0);
+
+      // --- ESTILOS CSS ---
+      createElement('style', `
+        body { margin: 0; overflow: hidden; background: #fff; }
+        .sidebar { 
+          width: ${sidebarWidth}px; height: 100vh; background: #f4f4f9; 
+          position: fixed; left: 0; top: 0; padding: 20px; 
+          box-sizing: border-box; border-right: 1px solid #ddd;
+          overflow-y: auto; z-index: 100; font-family: Arial, sans-serif;
+        }
+        .control-group { margin-bottom: 20px; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px; }
+        .label-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .label-title { font-size: 11px; font-weight: bold; color: #333; text-transform: uppercase; }
+        .current-val-input { width: 50px; font-size: 12px; color: #df93f0; font-weight: bold; text-align: center; border-radius: 4px; border: 1px solid #ddd; padding: 2px; }
+        .slider-container { display: flex; align-items: center; gap: 8px; }
+        .limit-val { font-size: 10px; color: #888; width: 30px; text-align: center; }
+        input[type=range] { flex-grow: 1; -webkit-appearance: none; background: #ddd; height: 4px; border-radius: 2px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: #df93f0; cursor: pointer; border: 2px solid #fff; }
+        button { width: 100%; background: #df93f0; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        button:hover { background: #c07cd1; }
+        .btn-clear { background: #666; margin-top: 5px; }
+        .btn-clear:hover { background: #444; }
+      `);
+
+      let sidebar = createDiv().class('sidebar');
+
+      // Grupo 1: Pincel (Manteniendo tus parámetros originales)
+      sliderAlpha = createEditableSlider(sidebar, "Opacidad", 0, 255, 150);
+      sliderCount = createEditableSlider(sidebar, "Densidad (Líneas)", 1, 50, 25);
+      sliderSize = createEditableSlider(sidebar, "Largo Líneas", 2, 20, 10);
+      sliderThickness = createEditableSlider(sidebar, "Espesor Línea", 1, 10, 2);
+      sliderWeight = createEditableSlider(sidebar, "Dispersión", 1, 150, 75);
+
+
+      // Grupo 2: Color
+      let colorGroup = createDiv().parent(sidebar).class('control-group');
+      createDiv("COLOR").parent(colorGroup).class('label-title');
+      colorPicker = createColorPicker('#df93f0').parent(colorGroup).style('width', '100%').style('height', '30px');
+
+      // Botones
+      btnClear = createButton('LIMPIAR LIENZO').parent(sidebar).class('btn-clear');
+      btnClear.mousePressed(() => lines = []);
+      btnSave = createButton('DESCARGAR PNG').parent(sidebar);
+      btnSave.mousePressed(() => saveCanvas('trazos_libres', 'png'));
+    }
+
+    function draw() {
+      background(255);
+
+      if (mouseIsPressed && mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
+        if (dist(mouseX, mouseY, pmouseX, pmouseY) > 1) {
+          for (let i = 0; i < sliderCount.value(); i++) {
+            let angleOff = random(TWO_PI);
+            let r = random(sliderWeight.value());
+            let px = mouseX + cos(angleOff) * r;
+            let py = mouseY + sin(angleOff) * r;
+
+            let dir = atan2(mouseY - pmouseY, mouseX - pmouseX);
+            let pCol = colorPicker.color();
+            pCol.setAlpha(sliderAlpha.value());
+
+            lines.push({
+              x: px,
+              y: py,
+              angle: dir,
+              len: sliderSize.value(),
+              col: pCol,
+              weight: sliderThickness.value() // Captura el espesor en el momento del trazo
+            });
+          }
+        }
+      }
+
+      // Renderizado dinámico por línea
+      for (let l of lines) {
+        stroke(l.col);
+        strokeWeight(l.weight);
+        push();
+        translate(l.x, l.y);
+        rotate(l.angle);
+        line(-l.len / 2, 0, l.len / 2, 0);
+        pop();
+      }
+    }
+
+    function createEditableSlider(parent, labelText, minV, maxV, defaultV) {
+      let group = createDiv().parent(parent).class('control-group');
+      let header = createDiv().parent(group).class('label-header');
+      createSpan(labelText).parent(header).class('label-title');
+      let valInput = createInput(defaultV.toString()).parent(header).class('current-val-input');
+      let sliderRow = createDiv().parent(group).class('slider-container');
+      createSpan(minV).parent(sliderRow).class('limit-val');
+      let s = createSlider(minV, maxV, defaultV).parent(sliderRow);
+      createSpan(maxV).parent(sliderRow).class('limit-val');
+
+      s.input(() => valInput.value(s.value()));
+      valInput.changed(() => {
+        let v = constrain(parseInt(valInput.value()) || minV, minV, maxV);
+        valInput.value(v);
+        s.value(v);
+      });
+      return s;
+    }
+
+    function windowResized() {
+      resizeCanvas(windowWidth - sidebarWidth, windowHeight);
+    }
+  </script>
+</body>
+
+</html>
