@@ -631,33 +631,65 @@ function createLinearGradient(x1, y1, x2, y2, width) {
 
 // ----------------- SPOTLIGHT (CONE) GRADIENT TOOL ------------------
 function updateSpotlightStyle(el, color, size, aperture, rotation) {
-    const solidColor = color;
-    const transparentColor = hexToRgba(color, 0);
+    const canvas = el.querySelector('canvas');
+    if (!canvas) return;
+
+    const sizeNum = parseInt(size);
+    canvas.width = sizeNum;
+    canvas.height = sizeNum;
+    el.style.width = `${sizeNum}px`;
+    el.style.height = `${sizeNum}px`;
+    el.style.opacity = (el.dataset.opacity || 100) / 100;
+
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, sizeNum, sizeNum);
+
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
 
     const halfAp = aperture / 2;
-    // Feather zone in degrees for smooth edges
     const feather = Math.min(halfAp * 0.3, 15);
 
-    // Build conic gradient: rotation starts from 12 o'clock (top), so offset by -90
-    const fromAngle = rotation - 90;
+    const cx = sizeNum / 2;
+    const cy = sizeNum / 2;
+    const maxR = sizeNum / 2;
 
-    el.style.background = `conic-gradient(
-        from ${fromAngle}deg at 50% 50%,
-        ${transparentColor} 0deg,
-        ${transparentColor} ${180 - halfAp - feather}deg,
-        ${solidColor} ${180 - halfAp}deg,
-        ${solidColor} ${180 + halfAp}deg,
-        ${transparentColor} ${180 + halfAp + feather}deg,
-        ${transparentColor} 360deg
-    )`;
+    // Canvas createConicGradient: 0 rad = right (3 o'clock)
+    // CSS conic-gradient: 0deg = top (12 o'clock)
+    // CSS fromAngle was (rotation - 90). To map to canvas: subtract another 90deg.
+    const canvasStartAngle = (rotation - 180) * Math.PI / 180;
 
-    // Radial mask for distance fade
-    el.style.webkitMaskImage = `radial-gradient(circle at center, black 0%, black 30%, transparent 70%)`;
-    el.style.maskImage = `radial-gradient(circle at center, black 0%, black 30%, transparent 70%)`;
+    const transparentColor = `rgba(${r}, ${g}, ${b}, 0)`;
+    const solidColor = `rgba(${r}, ${g}, ${b}, 1)`;
 
-    el.style.width = `${size}px`;
-    el.style.height = `${size}px`;
-    el.style.opacity = (el.dataset.opacity || 100) / 100;
+    // Draw conic gradient cone
+    const conicGrad = ctx.createConicGradient(canvasStartAngle, cx, cy);
+    conicGrad.addColorStop(0, transparentColor);
+    conicGrad.addColorStop((180 - halfAp - feather) / 360, transparentColor);
+    conicGrad.addColorStop((180 - halfAp) / 360, solidColor);
+    conicGrad.addColorStop((180 + halfAp) / 360, solidColor);
+    conicGrad.addColorStop((180 + halfAp + feather) / 360, transparentColor);
+    conicGrad.addColorStop(1, transparentColor);
+
+    ctx.fillStyle = conicGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, maxR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Apply radial fade mask (replicates the CSS mask-image)
+    ctx.globalCompositeOperation = 'destination-in';
+    const radialGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR);
+    radialGrad.addColorStop(0, 'rgba(0,0,0,1)');
+    radialGrad.addColorStop(0.3, 'rgba(0,0,0,1)');
+    radialGrad.addColorStop(0.7, 'rgba(0,0,0,0)');
+
+    ctx.fillStyle = radialGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, maxR, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.globalCompositeOperation = 'source-over';
 }
 
 function createSpotlight(clientX, clientY) {
@@ -671,6 +703,9 @@ function createSpotlight(clientX, clientY) {
     grad.dataset.rotation = '0';
     grad.dataset.opacity = '100';
     grad.style.opacity = '1';
+
+    const canvas = document.createElement('canvas');
+    grad.appendChild(canvas);
 
     updateSpotlightStyle(grad, grad.dataset.color, grad.dataset.size, parseFloat(grad.dataset.aperture), parseFloat(grad.dataset.rotation));
 
@@ -1773,7 +1808,7 @@ function updateFloatingToolbar() {
         'gradient': 'Gradiente Radial',
         'linear-gradient': 'Gradiente Lineal',
         'spotlight': 'Gradiente Foco',
-        'pencil': 'Lápiz',
+        'pencil': 'Trayectoria',
         'atractor': 'Atractor',
         'nube': 'Nube',
         'particulas': 'Partículas',
@@ -2251,16 +2286,19 @@ dom.screenshotBtn.addEventListener('click', () => {
     const toolbar = document.getElementById('bottom-toolbar');
     const topBar = document.getElementById('top-bar');
     const floatingToolbar = dom.floatingToolbar;
+    const sketchesMenu = document.getElementById('sketches-menu');
 
     // Temporarily hide UI and grid
     const originalToolbarVisibility = toolbar.style.visibility;
     const originalTopBarVisibility = topBar.style.visibility;
     const originalFloatingToolbarVisibility = floatingToolbar.style.visibility;
+    const originalSketchesMenuVisibility = sketchesMenu.style.visibility;
     const originalBackgroundImage = dom.container.style.backgroundImage;
 
     toolbar.style.visibility = 'hidden';
     topBar.style.visibility = 'hidden';
     floatingToolbar.style.visibility = 'hidden';
+    sketchesMenu.style.visibility = 'hidden';
     dom.container.style.backgroundImage = 'none';
 
     // Select the container to capture (the main viewer area)
@@ -2275,6 +2313,7 @@ dom.screenshotBtn.addEventListener('click', () => {
         toolbar.style.visibility = originalToolbarVisibility;
         topBar.style.visibility = originalTopBarVisibility;
         floatingToolbar.style.visibility = originalFloatingToolbarVisibility;
+        sketchesMenu.style.visibility = originalSketchesMenuVisibility;
         dom.container.style.backgroundImage = originalBackgroundImage;
 
         // Convert to PNG and download using native save dialog
