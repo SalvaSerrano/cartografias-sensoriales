@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cartografías Sensoriales</title>
+    <link rel="icon" type="image/png" href="img/favicon.png">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,6 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
+
 <body>
     <div id="app">
         <header id="top-bar">
@@ -19,7 +22,7 @@
                 <img id="logo" src="img/logo.png" alt="Cartografías Sensoriales Logo">
             </div>
         </header>
-        
+
         <main id="canvas-container" tabindex="0">
             <div id="canvas-workspace">
                 <div id="canvas-content">
@@ -27,288 +30,406 @@
                 </div>
             </div>
         </main>
-            
-            <div id="floating-toolbar" class="hidden">
-                <div id="element-type-label" class="element-type-label">Tipo</div>
-                <!-- Top Row: Utilities -->
-                <div class="floating-top-row">
-                    <div id="color-control" class="hidden">
-                        <input type="color" id="element-color" value="#df93f0" title="Color base">
-                    </div>
-                    <div class="toolbar-spacer"></div>
-                    <button id="element-send-back-btn" class="floating-btn tooltip-container" data-tooltip="Enviar al fondo">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-to-back"><rect x="14" y="14" width="8" height="8" rx="2"/><rect x="2" y="2" width="8" height="8" rx="2"/><path d="M7 14v1a2 2 0 0 0 2 2h1"/><path d="M14 7h1a2 2 0 0 1 2 2v1"/></svg>
-                    </button>
-                    <div class="toolbar-spacer"></div>
-                    <button id="element-lock-btn" class="floating-btn tooltip-container" data-tooltip="Bloquear">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
-                    </button>
+
+        <div id="floating-toolbar" class="hidden">
+            <div id="element-type-label" class="element-type-label">Tipo</div>
+            <!-- Top Row: Utilities -->
+            <div class="floating-top-row">
+                <div id="color-control" class="hidden">
+                    <input type="color" id="element-color" value="#df93f0" title="Color base">
                 </div>
-
-                <!-- Main Controls Area -->
-                <div class="floating-main-controls">
-                    <!-- Opacity (Common) -->
-                    <div id="opacity-control" class="toolbar-group">
-                        <div class="slider-labeled">
-                            <span class="slider-label">Opacidad</span>
-                            <input type="range" id="element-opacity" min="10" max="100" value="100" title="Opacidad">
-                        </div>
-                    </div>
-
-                    <!-- Size (Common for some) -->
-                    <div id="size-control" class="hidden toolbar-group">
-                        <div class="slider-labeled">
-                            <span class="slider-label">Tamaño</span>
-                            <input type="range" id="element-size" min="50" max="1500" value="200" title="Tamaño">
-                        </div>
-                    </div>
-
-                    <!-- tool specific controls -->
-                    <div id="linear-controls" class="hidden toolbar-group">
-
-                        <div class="slider-labeled">
-                            <span class="slider-label">Giro</span>
-                            <input type="range" id="element-angle" min="-180" max="180" value="0" title="Giro">
-                        </div>
-                    </div>
-
-                    <div id="spotlight-controls" class="hidden toolbar-group">
-                        <div class="slider-labeled">
-                            <span class="slider-label">Apertura</span>
-                            <input type="range" id="element-aperture" min="5" max="180" value="60" title="Apertura">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Giro</span>
-                            <input type="range" id="element-rotation" min="-180" max="180" value="0" title="Giro">
-                        </div>
-                    </div>
-
-                    <div id="pencil-controls" class="hidden toolbar-group">
-                        <div class="slider-labeled">
-                            <span class="slider-label">Grosor</span>
-                            <input type="range" id="element-stroke-weight" min="1" max="50" value="2" title="Grosor">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Estilo</span>
-                            <select id="element-stroke-style" title="Estilo de línea">
-                                <option value="solid">Continua</option>
-                                <option value="dashed">Discontinua</option>
-                            </select>
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Giro</span>
-                            <input type="range" id="element-pencil-rotation" min="-180" max="180" value="0" title="Giro">
-                        </div>
-                    </div>
-
-                    <div id="atractor-controls" class="hidden toolbar-group">
-                        <div class="slider-labeled">
-                            <span class="slider-label">Cantidad</span>
-                            <input type="range" id="element-atractor-count" min="100" max="5000" step="100" value="1000">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Longitud líneas</span>
-                            <input type="range" id="element-atractor-length" min="5" max="100" value="20">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Espesor</span>
-                            <input type="range" id="element-atractor-weight" min="1" max="15" value="2">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Ancho</span>
-                            <input type="range" id="element-atractor-width" min="50" max="2000" value="300">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Largo</span>
-                            <input type="range" id="element-atractor-height" min="50" max="2000" value="300">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">X</span>
-                            <input type="range" id="element-atractor-target-x" min="-100" max="100" value="0">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Y</span>
-                            <input type="range" id="element-atractor-target-y" min="-100" max="100" value="0">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Modo</span>
-                            <select id="element-atractor-mode">
-                                <option value="grid">Rejilla</option>
-                                <option value="random">Aleatorio</option>
-                            </select>
-                        </div>
-                        <div class="slider-labeled checkbox-labeled">
-                            <span class="slider-label">Círculo</span>
-                            <input type="checkbox" id="element-atractor-circle">
-                        </div>
-                        <div id="atractor-radius-container" class="slider-labeled hidden">
-                            <span class="slider-label">Radio</span>
-                            <input type="range" id="element-atractor-radius" min="20" max="500" value="150">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Giro</span>
-                            <input type="range" id="element-atractor-rotation" min="-180" max="180" value="0">
-                        </div>
-                    </div>
-                    
-                    <div id="nube-controls" class="hidden toolbar-group">
-                        <div class="slider-labeled">
-                            <span class="slider-label">Zoom Ruido</span>
-                            <input type="range" id="element-nube-scale" min="1" max="200" value="50">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Evolución (Z)</span>
-                            <input type="range" id="element-nube-z" min="0" max="1000" value="0">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Tamaño Grano</span>
-                            <input type="range" id="element-nube-blocksize" min="1" max="20" value="4">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Contraste</span>
-                            <input type="range" id="element-nube-brightness" min="1" max="5" value="1">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Ancho</span>
-                            <input type="range" id="element-nube-width" min="50" max="2000" value="400">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Largo</span>
-                            <input type="range" id="element-nube-height" min="50" max="2000" value="400">
-                        </div>
-                        <div class="slider-labeled checkbox-labeled">
-                            <span class="slider-label">Círculo</span>
-                            <input type="checkbox" id="element-nube-circle">
-                        </div>
-                        <div id="nube-radius-container" class="slider-labeled hidden">
-                            <span class="slider-label">Radio</span>
-                            <input type="range" id="element-nube-radius" min="20" max="500" value="200">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Giro</span>
-                            <input type="range" id="element-nube-rotation" min="-180" max="180" value="0">
-                        </div>
-                    </div>
-
-                    <div id="particulas-controls" class="hidden toolbar-group">
-                        <div class="slider-labeled">
-                            <span class="slider-label">Densidad (Spray)</span>
-                            <input type="range" id="element-particulas-density" min="1" max="50" value="10">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Tamaño Círculos</span>
-                            <input type="range" id="element-particulas-size" min="1" max="20" value="5">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Dispersión</span>
-                            <input type="range" id="element-particulas-spread" min="5" max="200" value="30">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Giro</span>
-                            <input type="range" id="element-particulas-rotation" min="-180" max="180" value="0">
-                        </div>
-                    </div>
-
-                    <div id="flujos-controls" class="hidden toolbar-group">
-                        <div class="slider-labeled">
-                            <span class="slider-label">Densidad (Líneas)</span>
-                            <input type="range" id="element-flujos-density" min="1" max="50" value="25">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Largo Líneas</span>
-                            <input type="range" id="element-flujos-length" min="2" max="40" value="10">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Espesor</span>
-                            <input type="range" id="element-flujos-thickness" min="1" max="10" value="2">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Dispersión</span>
-                            <input type="range" id="element-flujos-spread" min="1" max="150" value="75">
-                        </div>
-                        <div class="slider-labeled">
-                            <span class="slider-label">Giro</span>
-                            <input type="range" id="element-flujos-rotation" min="-180" max="180" value="0">
-                        </div>
-                    </div>
-                </div>
+                <div class="toolbar-spacer"></div>
+                <button id="element-send-back-btn" class="floating-btn tooltip-container"
+                    data-tooltip="Enviar al fondo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="lucide lucide-send-to-back">
+                        <rect x="14" y="14" width="8" height="8" rx="2" />
+                        <rect x="2" y="2" width="8" height="8" rx="2" />
+                        <path d="M7 14v1a2 2 0 0 0 2 2h1" />
+                        <path d="M14 7h1a2 2 0 0 1 2 2v1" />
+                    </svg>
+                </button>
+                <div class="toolbar-spacer"></div>
+                <button id="element-lock-btn" class="floating-btn tooltip-container" data-tooltip="Bloquear">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+                    </svg>
+                </button>
             </div>
 
-            <div id="drop-overlay" class="hidden">
-                <div class="drop-message">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    <span>Suelta la imagen aquí</span>
+            <!-- Main Controls Area -->
+            <div class="floating-main-controls">
+                <!-- Opacity (Common) -->
+                <div id="opacity-control" class="toolbar-group">
+                    <div class="slider-labeled">
+                        <span class="slider-label">Opacidad</span>
+                        <input type="range" id="element-opacity" min="10" max="100" value="100" title="Opacidad">
+                    </div>
                 </div>
-            </div>
 
-            <div id="bottom-toolbar">
-                <button id="upload-btn" class="toolbar-btn tooltip-container" data-tooltip="Cargar Imagen">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                </button>
-                <div class="toolbar-separator"></div>
-                <button id="select-btn" class="toolbar-btn tooltip-container active" data-tooltip="Seleccionar">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg>
-                </button>
-                <button id="delete-btn" class="toolbar-btn tooltip-container" data-tooltip="Borrar (Supr)">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                </button>
-                <div class="toolbar-separator"></div>
-                <button id="pencil-btn" class="toolbar-btn tooltip-container" data-tooltip="Lápiz">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
-                </button>
-                <button id="gradient-btn" class="toolbar-btn tooltip-container" data-tooltip="Gradiente Radial">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
-                </button>
-                <button id="linear-gradient-btn" class="toolbar-btn tooltip-container" data-tooltip="Gradiente Lineal">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                </button>
-                <button id="spotlight-btn" class="toolbar-btn tooltip-container" data-tooltip="Gradiente Foco">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L6 22 L18 22 Z"/><circle cx="12" cy="2" r="2"/></svg>
-                </button>
-                <button id="atractor-btn" class="toolbar-btn tooltip-container" data-tooltip="Atractor">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-                </button>
-                <button id="nube-btn" class="toolbar-btn tooltip-container" data-tooltip="Nube">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
-                </button>
-                <button id="particulas-btn" class="toolbar-btn tooltip-container" data-tooltip="Partículas">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="5" r="1.5"/><circle cx="12" cy="3" r="1"/><circle cx="19" cy="6" r="2"/><circle cx="7" cy="12" r="1.5"/><circle cx="15" cy="11" r="1"/><circle cx="20" cy="15" r="1.5"/><circle cx="4" cy="19" r="1"/><circle cx="11" cy="18" r="2"/><circle cx="17" cy="20" r="1"/></svg>
-                </button>
-                <button id="flujos-btn" class="toolbar-btn tooltip-container" data-tooltip="Flujos">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4c2 0 4 2 6 2s4-2 6-2 4 2 6 2"/><path d="M2 10c2 0 4 2 6 2s4-2 6-2 4 2 6 2"/><path d="M2 16c2 0 4 2 6 2s4-2 6-2 4 2 6 2"/></svg>
-                </button>
-                <div class="toolbar-separator"></div>
-                <button id="screenshot-btn" class="toolbar-btn tooltip-container" data-tooltip="Capturar Pantalla">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                </button>
-                <input type="file" id="file-input" accept="image/*" style="display: none;">
+                <!-- Size (Common for some) -->
+                <div id="size-control" class="hidden toolbar-group">
+                    <div class="slider-labeled">
+                        <span class="slider-label">Tamaño</span>
+                        <input type="range" id="element-size" min="50" max="1500" value="200" title="Tamaño">
+                    </div>
+                </div>
+
+                <!-- tool specific controls -->
+                <div id="linear-controls" class="hidden toolbar-group">
+
+                    <div class="slider-labeled">
+                        <span class="slider-label">Giro</span>
+                        <input type="range" id="element-angle" min="-180" max="180" value="0" title="Giro">
+                    </div>
+                </div>
+
+                <div id="spotlight-controls" class="hidden toolbar-group">
+                    <div class="slider-labeled">
+                        <span class="slider-label">Apertura</span>
+                        <input type="range" id="element-aperture" min="5" max="180" value="60" title="Apertura">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Giro</span>
+                        <input type="range" id="element-rotation" min="-180" max="180" value="0" title="Giro">
+                    </div>
+                </div>
+
+                <div id="pencil-controls" class="hidden toolbar-group">
+                    <div class="slider-labeled">
+                        <span class="slider-label">Grosor</span>
+                        <input type="range" id="element-stroke-weight" min="1" max="50" value="2" title="Grosor">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Estilo</span>
+                        <select id="element-stroke-style" title="Estilo de línea">
+                            <option value="solid">Continua</option>
+                            <option value="dashed">Discontinua</option>
+                        </select>
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Giro</span>
+                        <input type="range" id="element-pencil-rotation" min="-180" max="180" value="0" title="Giro">
+                    </div>
+                </div>
+
+                <div id="atractor-controls" class="hidden toolbar-group">
+                    <div class="slider-labeled">
+                        <span class="slider-label">Cantidad</span>
+                        <input type="range" id="element-atractor-count" min="100" max="5000" step="100" value="1000">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Longitud líneas</span>
+                        <input type="range" id="element-atractor-length" min="5" max="100" value="20">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Espesor</span>
+                        <input type="range" id="element-atractor-weight" min="1" max="15" value="2">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Ancho</span>
+                        <input type="range" id="element-atractor-width" min="50" max="2000" value="300">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Largo</span>
+                        <input type="range" id="element-atractor-height" min="50" max="2000" value="300">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">X</span>
+                        <input type="range" id="element-atractor-target-x" min="-100" max="100" value="0">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Y</span>
+                        <input type="range" id="element-atractor-target-y" min="-100" max="100" value="0">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Modo</span>
+                        <select id="element-atractor-mode">
+                            <option value="grid">Rejilla</option>
+                            <option value="random">Aleatorio</option>
+                        </select>
+                    </div>
+                    <div class="slider-labeled checkbox-labeled">
+                        <span class="slider-label">Círculo</span>
+                        <input type="checkbox" id="element-atractor-circle">
+                    </div>
+                    <div id="atractor-radius-container" class="slider-labeled hidden">
+                        <span class="slider-label">Radio</span>
+                        <input type="range" id="element-atractor-radius" min="20" max="500" value="150">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Giro</span>
+                        <input type="range" id="element-atractor-rotation" min="-180" max="180" value="0">
+                    </div>
+                </div>
+
+                <div id="nube-controls" class="hidden toolbar-group">
+                    <div class="slider-labeled">
+                        <span class="slider-label">Zoom Ruido</span>
+                        <input type="range" id="element-nube-scale" min="1" max="200" value="50">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Evolución (Z)</span>
+                        <input type="range" id="element-nube-z" min="0" max="1000" value="0">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Tamaño Grano</span>
+                        <input type="range" id="element-nube-blocksize" min="1" max="20" value="4">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Contraste</span>
+                        <input type="range" id="element-nube-brightness" min="1" max="5" value="1">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Ancho</span>
+                        <input type="range" id="element-nube-width" min="50" max="2000" value="400">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Largo</span>
+                        <input type="range" id="element-nube-height" min="50" max="2000" value="400">
+                    </div>
+                    <div class="slider-labeled checkbox-labeled">
+                        <span class="slider-label">Círculo</span>
+                        <input type="checkbox" id="element-nube-circle">
+                    </div>
+                    <div id="nube-radius-container" class="slider-labeled hidden">
+                        <span class="slider-label">Radio</span>
+                        <input type="range" id="element-nube-radius" min="20" max="500" value="200">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Giro</span>
+                        <input type="range" id="element-nube-rotation" min="-180" max="180" value="0">
+                    </div>
+                </div>
+
+                <div id="particulas-controls" class="hidden toolbar-group">
+                    <div class="slider-labeled">
+                        <span class="slider-label">Densidad (Spray)</span>
+                        <input type="range" id="element-particulas-density" min="1" max="50" value="10">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Tamaño Círculos</span>
+                        <input type="range" id="element-particulas-size" min="1" max="20" value="5">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Dispersión</span>
+                        <input type="range" id="element-particulas-spread" min="5" max="200" value="30">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Giro</span>
+                        <input type="range" id="element-particulas-rotation" min="-180" max="180" value="0">
+                    </div>
+                </div>
+
+                <div id="flujos-controls" class="hidden toolbar-group">
+                    <div class="slider-labeled">
+                        <span class="slider-label">Densidad (Líneas)</span>
+                        <input type="range" id="element-flujos-density" min="1" max="50" value="25">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Largo Líneas</span>
+                        <input type="range" id="element-flujos-length" min="2" max="40" value="10">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Espesor</span>
+                        <input type="range" id="element-flujos-thickness" min="1" max="10" value="2">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Dispersión</span>
+                        <input type="range" id="element-flujos-spread" min="1" max="150" value="75">
+                    </div>
+                    <div class="slider-labeled">
+                        <span class="slider-label">Giro</span>
+                        <input type="range" id="element-flujos-rotation" min="-180" max="180" value="0">
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div id="sketches-menu" class="sketches-menu">
-            <div id="sketches-popup" class="sketches-popup hidden">
-                <button class="sketches-item" data-url="atractorEmbed.html">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-                    <span>Atractor</span>
-                </button>
-                <button class="sketches-item" data-url="perlinNoiseEmbed.html">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
-                    <span>Nube</span>
-                </button>
-                <button class="sketches-item" data-url="particulasEmbed.html">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="5" r="1.5"/><circle cx="12" cy="3" r="1"/><circle cx="19" cy="6" r="2"/><circle cx="7" cy="12" r="1.5"/><circle cx="15" cy="11" r="1"/><circle cx="4" cy="19" r="1"/><circle cx="11" cy="18" r="2"/></svg>
-                    <span>Partículas</span>
-                </button>
-                <button class="sketches-item" data-url="flujosEmbed.html">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4c2 0 4 2 6 2s4-2 6-2 4 2 6 2"/><path d="M2 10c2 0 4 2 6 2s4-2 6-2 4 2 6 2"/><path d="M2 16c2 0 4 2 6 2s4-2 6-2 4 2 6 2"/></svg>
-                    <span>Flujos</span>
-                </button>
+        <div id="drop-overlay" class="hidden">
+            <div class="drop-message">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <span>Suelta la imagen aquí</span>
             </div>
-            <button id="sketches-toggle" class="sketches-toggle tooltip-container" data-tooltip="Abrir Sketch">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </div>
+
+        <div id="bottom-toolbar">
+            <button id="upload-btn" class="toolbar-btn tooltip-container" data-tooltip="Cargar Imagen">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+            </button>
+            <div class="toolbar-separator"></div>
+            <button id="select-btn" class="toolbar-btn tooltip-container active" data-tooltip="Seleccionar">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
+                    <path d="M13 13l6 6" />
+                </svg>
+            </button>
+            <button id="delete-btn" class="toolbar-btn tooltip-container" data-tooltip="Borrar (Supr)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    <line x1="10" y1="11" x2="10" y2="17" />
+                    <line x1="14" y1="11" x2="14" y2="17" />
+                </svg>
+            </button>
+            <div class="toolbar-separator"></div>
+            <button id="pencil-btn" class="toolbar-btn tooltip-container" data-tooltip="Trayectoria">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                </svg>
+            </button>
+            <button id="gradient-btn" class="toolbar-btn tooltip-container" data-tooltip="Gradiente Radial">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="12" cy="12" r="5" />
+                    <circle cx="12" cy="12" r="1" />
+                </svg>
+            </button>
+            <button id="linear-gradient-btn" class="toolbar-btn tooltip-container" data-tooltip="Gradiente Lineal">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <button id="spotlight-btn" class="toolbar-btn tooltip-container" data-tooltip="Gradiente Foco">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2 L6 22 L18 22 Z" />
+                    <circle cx="12" cy="2" r="2" />
+                </svg>
+            </button>
+            <button id="atractor-btn" class="toolbar-btn tooltip-container" data-tooltip="Atractor">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="4" />
+                    <path d="M12 2v2" />
+                    <path d="M12 20v2" />
+                    <path d="m4.93 4.93 1.41 1.41" />
+                    <path d="m17.66 17.66 1.41 1.41" />
+                    <path d="M2 12h2" />
+                    <path d="M20 12h2" />
+                    <path d="m6.34 17.66-1.41 1.41" />
+                    <path d="m19.07 4.93-1.41 1.41" />
+                </svg>
+            </button>
+            <button id="nube-btn" class="toolbar-btn tooltip-container" data-tooltip="Nube">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+                </svg>
+            </button>
+            <button id="particulas-btn" class="toolbar-btn tooltip-container" data-tooltip="Partículas">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="5" cy="5" r="1.5" />
+                    <circle cx="12" cy="3" r="1" />
+                    <circle cx="19" cy="6" r="2" />
+                    <circle cx="7" cy="12" r="1.5" />
+                    <circle cx="15" cy="11" r="1" />
+                    <circle cx="20" cy="15" r="1.5" />
+                    <circle cx="4" cy="19" r="1" />
+                    <circle cx="11" cy="18" r="2" />
+                    <circle cx="17" cy="20" r="1" />
+                </svg>
+            </button>
+            <button id="flujos-btn" class="toolbar-btn tooltip-container" data-tooltip="Flujos">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 4c2 0 4 2 6 2s4-2 6-2 4 2 6 2" />
+                    <path d="M2 10c2 0 4 2 6 2s4-2 6-2 4 2 6 2" />
+                    <path d="M2 16c2 0 4 2 6 2s4-2 6-2 4 2 6 2" />
+                </svg>
+            </button>
+            <div class="toolbar-separator"></div>
+            <button id="screenshot-btn" class="toolbar-btn tooltip-container" data-tooltip="Capturar Pantalla">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                    <circle cx="12" cy="13" r="4" />
+                </svg>
+            </button>
+            <input type="file" id="file-input" accept="image/*" style="display: none;">
+        </div>
+    </div>
+
+    <div id="sketches-menu" class="sketches-menu">
+        <div id="sketches-popup" class="sketches-popup hidden">
+            <button class="sketches-item" data-url="atractorEmbed.html">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="4" />
+                    <path d="M12 2v2" />
+                    <path d="M12 20v2" />
+                    <path d="m4.93 4.93 1.41 1.41" />
+                    <path d="m17.66 17.66 1.41 1.41" />
+                    <path d="M2 12h2" />
+                    <path d="M20 12h2" />
+                    <path d="m6.34 17.66-1.41 1.41" />
+                    <path d="m19.07 4.93-1.41 1.41" />
+                </svg>
+                <span>Atractor</span>
+            </button>
+            <button class="sketches-item" data-url="perlinNoiseEmbed.html">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+                </svg>
+                <span>Nube</span>
+            </button>
+            <button class="sketches-item" data-url="particulasEmbed.html">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="5" cy="5" r="1.5" />
+                    <circle cx="12" cy="3" r="1" />
+                    <circle cx="19" cy="6" r="2" />
+                    <circle cx="7" cy="12" r="1.5" />
+                    <circle cx="15" cy="11" r="1" />
+                    <circle cx="4" cy="19" r="1" />
+                    <circle cx="11" cy="18" r="2" />
+                </svg>
+                <span>Partículas</span>
+            </button>
+            <button class="sketches-item" data-url="flujosEmbed.html">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 4c2 0 4 2 6 2s4-2 6-2 4 2 6 2" />
+                    <path d="M2 10c2 0 4 2 6 2s4-2 6-2 4 2 6 2" />
+                    <path d="M2 16c2 0 4 2 6 2s4-2 6-2 4 2 6 2" />
+                </svg>
+                <span>Flujos</span>
             </button>
         </div>
+        <button id="sketches-toggle" class="sketches-toggle tooltip-container" data-tooltip="Abrir Sketch">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+        </button>
+    </div>
 
-        <script type="module" src="main.js"></script>
-    </body>
+    <script type="module" src="main.js"></script>
+</body>
+
 </html>

@@ -3,7 +3,8 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Nube</title>
+  <title>Flujos</title>
+  <link rel="icon" type="image/png" href="img/favicon.png">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
   <style>
     body {
@@ -69,11 +70,11 @@
       btnClear = createButton('LIMPIAR LIENZO').parent(sidebar).class('btn-clear');
       btnClear.mousePressed(() => lines = []);
       btnSave = createButton('DESCARGAR PNG').parent(sidebar);
-      btnSave.mousePressed(() => saveCanvas('trazos_libres', 'png'));
+      btnSave.mousePressed(downloadTransparentImage);
     }
 
     function draw() {
-      background(255);
+      clear(); // Fondo transparente
 
       if (mouseIsPressed && mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
         if (dist(mouseX, mouseY, pmouseX, pmouseY) > 1) {
@@ -109,6 +110,34 @@
         line(-l.len / 2, 0, l.len / 2, 0);
         pop();
       }
+    }
+
+    function downloadTransparentImage() {
+      if (lines.length === 0) return;
+      // Calcular bounding box de las líneas
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (let l of lines) {
+        let halfLen = l.len / 2 + l.weight;
+        minX = min(minX, l.x - halfLen);
+        minY = min(minY, l.y - halfLen);
+        maxX = max(maxX, l.x + halfLen);
+        maxY = max(maxY, l.y + halfLen);
+      }
+      let margin = 20;
+      let outW = maxX - minX + margin;
+      let outH = maxY - minY + margin;
+      let pg = createGraphics(outW, outH);
+      pg.clear();
+      for (let l of lines) {
+        pg.stroke(l.col);
+        pg.strokeWeight(l.weight);
+        pg.push();
+        pg.translate(l.x - minX + margin / 2, l.y - minY + margin / 2);
+        pg.rotate(l.angle);
+        pg.line(-l.len / 2, 0, l.len / 2, 0);
+        pg.pop();
+      }
+      save(pg, 'trazos_libres', 'png');
     }
 
     function createEditableSlider(parent, labelText, minV, maxV, defaultV) {

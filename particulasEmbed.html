@@ -3,7 +3,8 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Nube</title>
+  <title>Partículas</title>
+  <link rel="icon" type="image/png" href="img/favicon.png">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
   <style>
     body {
@@ -69,11 +70,11 @@
       btnClear = createButton('LIMPIAR LIENZO').parent(sidebar).class('btn-clear');
       btnClear.mousePressed(() => particles = []);
       btnSave = createButton('DESCARGAR PNG').parent(sidebar);
-      btnSave.mousePressed(() => saveCanvas('mis_particulas', 'png'));
+      btnSave.mousePressed(downloadTransparentImage);
     }
 
     function draw() {
-      background(255); // Fondo blanco limpio
+      clear(); // Fondo transparente
 
       // Si el ratón está presionado, generar nuevas partículas
       if (mouseIsPressed && mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) {
@@ -95,6 +96,29 @@
         fill(p.col);
         circle(p.x, p.y, p.size);
       }
+    }
+
+    function downloadTransparentImage() {
+      // Calcular bounding box de las partículas
+      if (particles.length === 0) return;
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (let p of particles) {
+        minX = min(minX, p.x - p.size);
+        minY = min(minY, p.y - p.size);
+        maxX = max(maxX, p.x + p.size);
+        maxY = max(maxY, p.y + p.size);
+      }
+      let margin = 20;
+      let outW = maxX - minX + margin;
+      let outH = maxY - minY + margin;
+      let pg = createGraphics(outW, outH);
+      pg.clear();
+      pg.noStroke();
+      for (let p of particles) {
+        pg.fill(p.col);
+        pg.circle(p.x - minX + margin / 2, p.y - minY + margin / 2, p.size);
+      }
+      save(pg, 'mis_particulas', 'png');
     }
 
     function createEditableSlider(parent, labelText, minV, maxV, defaultV) {
